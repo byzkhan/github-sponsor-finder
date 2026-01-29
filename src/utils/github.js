@@ -1,17 +1,17 @@
 const GITHUB_API_BASE = 'https://api.github.com'
-const TRENDING_API_BASE = 'https://api.gitterapp.com'
+const TRENDING_API_BASE = 'https://api.ossinsight.io/v1/trends/repos'
 
 export const TIME_PERIODS = {
-  'daily': { label: 'Today', param: 'daily' },
-  'weekly': { label: 'This week', param: 'weekly' },
-  'monthly': { label: 'This month', param: 'monthly' },
+  'daily': { label: 'Today', param: 'past_24_hours' },
+  'weekly': { label: 'This week', param: 'past_week' },
+  'monthly': { label: 'This month', param: 'past_month' },
 }
 
-// Fetch trending repos from unofficial GitHub trending API
+// Fetch trending repos from OSS Insight API (powered by TiDB)
 async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
-  const since = TIME_PERIODS[timePeriod]?.param || 'weekly'
+  const period = TIME_PERIODS[timePeriod]?.param || 'past_week'
 
-  let url = `${TRENDING_API_BASE}/repositories?since=${since}`
+  let url = `${TRENDING_API_BASE}?period=${period}`
   if (language) {
     url += `&language=${encodeURIComponent(language)}`
   }
@@ -19,30 +19,34 @@ async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
   const response = await fetch(url)
 
   if (!response.ok) {
-    throw new Error('Trending API unavailable. Falling back to search.')
+    throw new Error('Trending API unavailable')
   }
 
-  const repos = await response.json()
+  const json = await response.json()
+  const rows = json.data?.rows || []
 
-  // Transform to match GitHub API format
-  return repos.map(repo => ({
-    id: repo.rank || Math.random(),
-    name: repo.name || repo.repositoryName,
-    full_name: `${repo.username || repo.author}/${repo.name || repo.repositoryName}`,
-    description: repo.description,
-    html_url: repo.url,
-    stargazers_count: parseInt(repo.totalStars || repo.stars?.replace(/,/g, '') || 0),
-    currentPeriodStars: parseInt(repo.currentPeriodStars || repo.starsInPeriod || repo.stars?.replace(/,/g, '') || 0),
-    forks_count: parseInt(repo.forks?.replace(/,/g, '') || 0),
-    language: repo.language,
-    owner: {
-      login: repo.username || repo.author,
-      avatar_url: repo.avatar || repo.builtBy?.[0]?.avatar || `https://github.com/${repo.username || repo.author}.png`
+  // Transform to match our expected format
+  return rows.map((repo, index) => {
+    const [owner, name] = (repo.repo_name || '').split('/')
+    return {
+      id: repo.repo_id || index,
+      name: name || repo.repo_name,
+      full_name: repo.repo_name,
+      description: repo.description,
+      html_url: `https://github.com/${repo.repo_name}`,
+      stargazers_count: parseInt(repo.stars) || 0,
+      forks_count: parseInt(repo.forks) || 0,
+      language: repo.primary_language,
+      trending_score: parseFloat(repo.total_score) || 0,
+      owner: {
+        login: owner || repo.repo_name?.split('/')[0],
+        avatar_url: `https://github.com/${owner || repo.repo_name?.split('/')[0]}.png`
+      }
     }
-  }))
+  })
 }
 
-// Fallback: Search GitHub API directly
+// Search GitHub API directly (for keyword searches)
 async function searchGitHubRepos(query = '', language = '', page = 1) {
   let searchQuery = 'stars:>50'
 

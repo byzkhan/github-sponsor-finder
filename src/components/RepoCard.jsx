@@ -49,12 +49,12 @@ function RepoCard({ repo }) {
           </svg>
           {repo.stargazers_count?.toLocaleString() || '0'}
         </span>
-        {repo.currentPeriodStars > 0 && (
+        {repo.trending_score > 0 && (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-full font-medium">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
-            +{repo.currentPeriodStars.toLocaleString()}
+            Trending
           </span>
         )}
         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-full">
