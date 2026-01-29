@@ -1,41 +1,47 @@
 function Header({ wishlistCount, onWishlistClick }) {
   return (
-    <header className="border-b border-green-900 bg-black/90 backdrop-blur-sm sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto px-4 py-4">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-green-500 glow">
-              <pre className="text-xs leading-none">
-{`╔═══╗
-║ $ ║
-╚═══╝`}
-              </pre>
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-green-400 glow tracking-wider">
-                GITHUB_SPONSOR_FINDER
+              <h1 className="text-xl font-semibold text-gray-900">
+                GitHub Sponsor Finder
               </h1>
-              <p className="text-green-700 text-xs tracking-widest">
-                {'>'} DISCOVERING TRENDING REPOS...
+              <p className="text-gray-500 text-sm">
+                Discover trending repositories to sponsor
               </p>
             </div>
           </div>
 
           <button
             onClick={onWishlistClick}
-            className="flex items-center gap-2 px-4 py-2 border border-green-700 hover:border-green-400 hover:bg-green-950 rounded transition-all group"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
-            <span className="text-green-500 group-hover:text-green-400">[</span>
-            <svg className="w-4 h-4 text-green-500 group-hover:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
               <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
-            <span className="text-green-500 group-hover:text-green-400 text-sm">WISHLIST</span>
+            <span className="text-gray-700 font-medium">Wishlist</span>
             {wishlistCount > 0 && (
-              <span className="bg-green-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
+              <span className="bg-rose-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">
                 {wishlistCount}
               </span>
             )}
-            <span className="text-green-500 group-hover:text-green-400">]</span>
           </button>
         </div>
       </div>
