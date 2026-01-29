@@ -22,21 +22,6 @@ async function fetchRepoDetails(fullName) {
   }
 }
 
-// Fetch user data to check sponsorship status
-async function fetchUserDetails(username) {
-  try {
-    const response = await fetch(`${GITHUB_API_BASE}/users/${username}`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    })
-    if (!response.ok) return null
-    return await response.json()
-  } catch {
-    return null
-  }
-}
-
 // Fetch trending repos from OSS Insight API (powered by TiDB)
 async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
   const period = TIME_PERIODS[timePeriod]?.param || 'past_week'
@@ -80,15 +65,7 @@ async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
 async function enrichWithGitHubData(repos) {
   const enrichedRepos = await Promise.all(
     repos.map(async (repo) => {
-      // Fetch repo and user data in parallel
-      const [githubData, userData] = await Promise.all([
-        fetchRepoDetails(repo.full_name),
-        fetchUserDetails(repo.owner.login)
-      ])
-
-      const is_sponsorable = userData?.is_sponsoring !== undefined ||
-                             userData?.has_sponsors_listing === true
-
+      const githubData = await fetchRepoDetails(repo.full_name)
       if (githubData) {
         return {
           ...repo,
@@ -99,7 +76,6 @@ async function enrichWithGitHubData(repos) {
           stargazers_count: githubData.stargazers_count,
           forks_count: githubData.forks_count,
           language: githubData.language,
-          is_sponsorable,
           owner: {
             login: githubData.owner.login,
             avatar_url: githubData.owner.avatar_url
@@ -110,24 +86,7 @@ async function enrichWithGitHubData(repos) {
       return {
         ...repo,
         stargazers_count: repo.stars_in_period,
-        forks_count: repo.forks_in_period,
-        is_sponsorable
-      }
-    })
-  )
-  return enrichedRepos
-}
-
-// Enrich search results with sponsorship data
-async function enrichSearchResultsWithSponsorship(repos) {
-  const enrichedRepos = await Promise.all(
-    repos.map(async (repo) => {
-      const userData = await fetchUserDetails(repo.owner.login)
-      const is_sponsorable = userData?.is_sponsoring !== undefined ||
-                             userData?.has_sponsors_listing === true
-      return {
-        ...repo,
-        is_sponsorable
+        forks_count: repo.forks_in_period
       }
     })
   )
@@ -175,11 +134,8 @@ async function searchGitHubRepos(query = '', language = '', page = 1) {
 
   const data = await response.json()
 
-  // Enrich with sponsorship data
-  const enrichedRepos = await enrichSearchResultsWithSponsorship(data.items || [])
-
   return {
-    repos: enrichedRepos,
+    repos: data.items || [],
     totalCount: data.total_count || 0,
     hasMore: (page * 10) < (data.total_count || 0)
   }
@@ -200,7 +156,7 @@ export async function searchRepositories(query = '', language = '', timePeriod =
     const endIndex = startIndex + 10
     const paginatedRepos = trendingRepos.slice(startIndex, endIndex)
 
-    // Enrich with real-time GitHub data (current name, total stars, sponsorship)
+    // Enrich with real-time GitHub data (current name, total stars)
     const enrichedRepos = await enrichWithGitHubData(paginatedRepos)
 
     return {

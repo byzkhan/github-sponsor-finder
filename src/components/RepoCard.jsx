@@ -1,6 +1,6 @@
 import { getSponsorUrl, getRepoUrl } from '../utils/github'
 
-function RepoCard({ repo }) {
+function RepoCard({ repo, isInWishlist, onToggleWishlist }) {
   const sponsorUrl = getSponsorUrl(repo.owner.login)
   const repoUrl = getRepoUrl(repo.full_name)
 
@@ -30,6 +30,19 @@ function RepoCard({ repo }) {
             {repo.owner.login}
           </a>
         </div>
+        <button
+          onClick={() => onToggleWishlist(repo)}
+          className={`p-2 rounded-lg transition-colors ${
+            isInWishlist
+              ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30'
+              : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
+          }`}
+          title={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <svg className="w-5 h-5" fill={isInWishlist ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
       </div>
 
       <p className="text-slate-300 text-sm mb-4 line-clamp-2">
@@ -65,30 +78,19 @@ function RepoCard({ repo }) {
         </span>
       </div>
 
-      {repo.is_sponsorable ? (
-        <a
-          href={sponsorUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary w-full text-center block"
-        >
-          <span className="inline-flex items-center justify-center gap-2">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-            </svg>
-            Sponsor {repo.owner.login}
-          </span>
-        </a>
-      ) : (
-        <div className="w-full text-center py-2 px-4 bg-slate-700/50 text-slate-500 rounded-lg text-sm">
-          <span className="inline-flex items-center justify-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-            Not available for sponsorship
-          </span>
-        </div>
-      )}
+      <a
+        href={sponsorUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-primary w-full text-center block"
+      >
+        <span className="inline-flex items-center justify-center gap-2">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+          </svg>
+          Sponsor {repo.owner.login}
+        </span>
+      </a>
     </div>
   )
 }

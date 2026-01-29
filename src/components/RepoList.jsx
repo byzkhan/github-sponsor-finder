@@ -1,6 +1,6 @@
 import RepoCard from './RepoCard'
 
-function RepoList({ repos, hasMore, loadingMore, onLoadMore }) {
+function RepoList({ repos, hasMore, loadingMore, onLoadMore, wishlist, onToggleWishlist }) {
   if (repos.length === 0) {
     return (
       <div className="text-center py-16">
@@ -39,7 +39,12 @@ function RepoList({ repos, hasMore, loadingMore, onLoadMore }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {repos.map((repo) => (
-          <RepoCard key={repo.id} repo={repo} />
+          <RepoCard
+            key={repo.id || repo.full_name}
+            repo={repo}
+            isInWishlist={wishlist.some(r => r.full_name === repo.full_name)}
+            onToggleWishlist={onToggleWishlist}
+          />
         ))}
       </div>
 

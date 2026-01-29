@@ -21,9 +21,7 @@ function Filters({
   timePeriod,
   onTimePeriodChange,
   language,
-  onLanguageChange,
-  showSponsorableOnly,
-  onSponsorableToggle
+  onLanguageChange
 }) {
   const selectStyle = {
     backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
@@ -69,27 +67,6 @@ function Filters({
             </option>
           ))}
         </select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={showSponsorableOnly}
-          onClick={onSponsorableToggle}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${
-            showSponsorableOnly ? 'bg-emerald-500' : 'bg-slate-700'
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-              showSponsorableOnly ? 'translate-x-6' : 'translate-x-1'
-            }`}
-          />
-        </button>
-        <label className="text-sm text-slate-400 cursor-pointer" onClick={onSponsorableToggle}>
-          Sponsorable only
-        </label>
       </div>
     </div>
   )

@@ -1,19 +1,27 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Header from './components/Header'
 import SearchBar from './components/SearchBar'
 import Filters from './components/Filters'
 import RepoList from './components/RepoList'
+import Wishlist from './components/Wishlist'
 import LoadingSpinner from './components/LoadingSpinner'
 import ErrorMessage from './components/ErrorMessage'
 import { useGitHubSearch } from './hooks/useGitHubSearch'
+import { getWishlist, addToWishlist, removeFromWishlist } from './utils/wishlist'
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [language, setLanguage] = useState('')
   const [timePeriod, setTimePeriod] = useState('weekly')
-  const [showSponsorableOnly, setShowSponsorableOnly] = useState(false)
+  const [wishlist, setWishlist] = useState([])
+  const [showWishlist, setShowWishlist] = useState(false)
 
   const { repos, loading, loadingMore, error, hasMore, search, loadMore, retry } = useGitHubSearch()
+
+  // Load wishlist from localStorage on mount
+  useEffect(() => {
+    setWishlist(getWishlist())
+  }, [])
 
   const handleSearch = useCallback((query) => {
     setSearchQuery(query)
@@ -30,13 +38,23 @@ function App() {
     search(searchQuery, language, period)
   }, [searchQuery, language, search])
 
-  const filteredRepos = showSponsorableOnly
-    ? repos.filter(repo => repo.owner?.login)
-    : repos
+  const handleToggleWishlist = useCallback((repo) => {
+    const isInList = wishlist.some(r => r.full_name === repo.full_name)
+    if (isInList) {
+      const updated = removeFromWishlist(repo.full_name)
+      setWishlist(updated)
+    } else {
+      const updated = addToWishlist(repo)
+      setWishlist(updated)
+    }
+  }, [wishlist])
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <Header />
+      <Header
+        wishlistCount={wishlist.length}
+        onWishlistClick={() => setShowWishlist(true)}
+      />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="space-y-6">
@@ -47,8 +65,6 @@ function App() {
             onTimePeriodChange={handleTimePeriodChange}
             language={language}
             onLanguageChange={handleLanguageChange}
-            showSponsorableOnly={showSponsorableOnly}
-            onSponsorableToggle={() => setShowSponsorableOnly(!showSponsorableOnly)}
           />
 
           {loading && <LoadingSpinner />}
@@ -57,14 +73,24 @@ function App() {
 
           {!loading && !error && (
             <RepoList
-              repos={filteredRepos}
+              repos={repos}
               hasMore={hasMore}
               loadingMore={loadingMore}
               onLoadMore={loadMore}
+              wishlist={wishlist}
+              onToggleWishlist={handleToggleWishlist}
             />
           )}
         </div>
       </main>
+
+      {showWishlist && (
+        <Wishlist
+          repos={wishlist}
+          onToggleWishlist={handleToggleWishlist}
+          onClose={() => setShowWishlist(false)}
+        />
+      )}
     </div>
   )
 }
