@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import Header from './components/Header'
 import SearchBar from './components/SearchBar'
 import Filters from './components/Filters'
@@ -13,15 +13,11 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [language, setLanguage] = useState('')
   const [timePeriod, setTimePeriod] = useState('weekly')
-  const [wishlist, setWishlist] = useState([])
+  // Initialize wishlist directly from localStorage
+  const [wishlist, setWishlist] = useState(() => getWishlist())
   const [showWishlist, setShowWishlist] = useState(false)
 
   const { repos, loading, loadingMore, error, hasMore, search, loadMore, retry } = useGitHubSearch()
-
-  // Load wishlist from localStorage on mount
-  useEffect(() => {
-    setWishlist(getWishlist())
-  }, [])
 
   const handleSearch = useCallback((query) => {
     setSearchQuery(query)
