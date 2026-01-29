@@ -1,11 +1,27 @@
 function LoadingSpinner() {
   return (
-    <div className="flex flex-col items-center justify-center py-16">
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
-        <div className="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
+    <div className="terminal-box">
+      <div className="terminal-header">
+        <div className="terminal-dot bg-red-500"></div>
+        <div className="terminal-dot bg-yellow-500"></div>
+        <div className="terminal-dot bg-green-500"></div>
+        <span className="text-green-700 text-xs ml-2">loading.sh</span>
       </div>
-      <p className="mt-4 text-slate-400 text-sm">Searching repositories...</p>
+      <div className="p-8 text-center">
+        <pre className="text-green-500 text-xs animate-pulse">
+{`
+  ╔══════════════════════════════╗
+  ║                              ║
+  ║   FETCHING_DATA...           ║
+  ║   ████████████░░░░░  75%     ║
+  ║                              ║
+  ╚══════════════════════════════╝
+`}
+        </pre>
+        <p className="text-green-700 text-xs mt-4">
+          {'>'} Connecting to GitHub API...
+        </p>
+      </div>
     </div>
   )
 }
