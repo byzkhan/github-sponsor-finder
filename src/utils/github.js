@@ -2,6 +2,17 @@ const GITHUB_API_BASE = 'https://api.github.com'
 const TRENDING_API_BASE = 'https://api.ossinsight.io/v1/trends/repos'
 const CACHE_KEY = 'github-repo-cache'
 const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes
+const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN || ''
+
+function getAuthHeaders() {
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json'
+  }
+  if (GITHUB_TOKEN) {
+    headers['Authorization'] = `Bearer ${GITHUB_TOKEN}`
+  }
+  return headers
+}
 
 export const TIME_PERIODS = {
   'daily': { label: 'Today', param: 'past_24_hours' },
@@ -49,9 +60,7 @@ async function fetchRepoDetails(fullName) {
 
   try {
     const response = await fetch(`${GITHUB_API_BASE}/repos/${fullName}`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
+      headers: getAuthHeaders()
     })
 
     if (response.status === 403) {
@@ -167,9 +176,7 @@ async function searchGitHubRepos(query = '', language = '', page = 1) {
   })
 
   const response = await fetch(`${GITHUB_API_BASE}/search/repositories?${params}`, {
-    headers: {
-      'Accept': 'application/vnd.github.v3+json'
-    }
+    headers: getAuthHeaders()
   })
 
   if (!response.ok) {
