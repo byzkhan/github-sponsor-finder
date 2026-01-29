@@ -8,12 +8,12 @@ export function useGitHubSearch() {
   const [error, setError] = useState(null)
   const [hasMore, setHasMore] = useState(false)
   const [page, setPage] = useState(1)
-  const [lastSearch, setLastSearch] = useState({ query: '', language: '', timePeriod: '7d' })
+  const [lastSearch, setLastSearch] = useState({ query: '', language: '', timePeriod: 'weekly' })
   const [initialized, setInitialized] = useState(false)
 
   const debounceTimeout = useRef(null)
 
-  const search = useCallback((query, language = '', timePeriod = '7d', resetPage = true) => {
+  const search = useCallback((query, language = '', timePeriod = 'weekly', resetPage = true) => {
     const newPage = resetPage ? 1 : page
     setLastSearch({ query, language, timePeriod })
 
@@ -93,7 +93,7 @@ export function useGitHubSearch() {
   // Auto-load on mount
   useEffect(() => {
     if (!initialized) {
-      search('', '', '7d')
+      search('', '', 'weekly')
     }
   }, [initialized, search])
 

@@ -10,7 +10,7 @@ import { useGitHubSearch } from './hooks/useGitHubSearch'
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [language, setLanguage] = useState('')
-  const [timePeriod, setTimePeriod] = useState('7d')
+  const [timePeriod, setTimePeriod] = useState('weekly')
   const [showSponsorableOnly, setShowSponsorableOnly] = useState(false)
 
   const { repos, loading, loadingMore, error, hasMore, search, loadMore, retry } = useGitHubSearch()
