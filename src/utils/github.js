@@ -7,6 +7,21 @@ export const TIME_PERIODS = {
   'monthly': { label: 'This month', param: 'past_month' },
 }
 
+// Fetch real-time repo data from GitHub API
+async function fetchRepoDetails(fullName) {
+  try {
+    const response = await fetch(`${GITHUB_API_BASE}/repos/${fullName}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
 // Fetch trending repos from OSS Insight API (powered by TiDB)
 async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
   const period = TIME_PERIODS[timePeriod]?.param || 'past_week'
@@ -34,8 +49,8 @@ async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
       full_name: repo.repo_name,
       description: repo.description,
       html_url: `https://github.com/${repo.repo_name}`,
-      stargazers_count: parseInt(repo.stars) || 0,
-      forks_count: parseInt(repo.forks) || 0,
+      stars_in_period: parseInt(repo.stars) || 0,
+      forks_in_period: parseInt(repo.forks) || 0,
       language: repo.primary_language,
       trending_score: parseFloat(repo.total_score) || 0,
       owner: {
@@ -44,6 +59,38 @@ async function fetchTrendingRepos(timePeriod = 'weekly', language = '') {
       }
     }
   })
+}
+
+// Enrich trending repos with real-time GitHub data
+async function enrichWithGitHubData(repos) {
+  const enrichedRepos = await Promise.all(
+    repos.map(async (repo) => {
+      const githubData = await fetchRepoDetails(repo.full_name)
+      if (githubData) {
+        return {
+          ...repo,
+          id: githubData.id,
+          name: githubData.name,
+          full_name: githubData.full_name,
+          description: githubData.description,
+          stargazers_count: githubData.stargazers_count,
+          forks_count: githubData.forks_count,
+          language: githubData.language,
+          owner: {
+            login: githubData.owner.login,
+            avatar_url: githubData.owner.avatar_url
+          }
+        }
+      }
+      // Fallback to OSS Insight data if GitHub fetch fails
+      return {
+        ...repo,
+        stargazers_count: repo.stars_in_period,
+        forks_count: repo.forks_in_period
+      }
+    })
+  )
+  return enrichedRepos
 }
 
 // Search GitHub API directly (for keyword searches)
@@ -108,8 +155,11 @@ export async function searchRepositories(query = '', language = '', timePeriod =
     const endIndex = startIndex + 10
     const paginatedRepos = trendingRepos.slice(startIndex, endIndex)
 
+    // Enrich with real-time GitHub data (current name, total stars)
+    const enrichedRepos = await enrichWithGitHubData(paginatedRepos)
+
     return {
-      repos: paginatedRepos,
+      repos: enrichedRepos,
       totalCount: trendingRepos.length,
       hasMore: endIndex < trendingRepos.length
     }
