@@ -18,7 +18,7 @@ export async function searchRepositories(query = '', language = '', timePeriod =
   const days = TIME_PERIODS[timePeriod]?.days || 7
   const dateThreshold = getDateDaysAgo(days)
 
-  let searchQuery = `created:>${dateThreshold} stars:>10`
+  let searchQuery = `pushed:>${dateThreshold} stars:>100`
 
   if (query.trim()) {
     searchQuery = `${query.trim()} ${searchQuery}`
