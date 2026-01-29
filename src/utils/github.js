@@ -1,5 +1,7 @@
 const GITHUB_API_BASE = 'https://api.github.com'
 const TRENDING_API_BASE = 'https://api.ossinsight.io/v1/trends/repos'
+const CACHE_KEY = 'github-repo-cache'
+const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes
 
 export const TIME_PERIODS = {
   'daily': { label: 'Today', param: 'past_24_hours' },
@@ -7,16 +9,67 @@ export const TIME_PERIODS = {
   'monthly': { label: 'This month', param: 'past_month' },
 }
 
-// Fetch real-time repo data from GitHub API
+// Simple cache for GitHub repo data
+function getCache() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY)
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached)
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        return data
+      }
+    }
+  } catch {}
+  return {}
+}
+
+function setCache(repoName, data) {
+  try {
+    const cache = getCache()
+    cache[repoName] = data
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data: cache,
+      timestamp: Date.now()
+    }))
+  } catch {}
+}
+
+function getCachedRepo(repoName) {
+  const cache = getCache()
+  return cache[repoName] || null
+}
+
+// Fetch real-time repo data from GitHub API with caching
 async function fetchRepoDetails(fullName) {
+  // Check cache first
+  const cached = getCachedRepo(fullName)
+  if (cached) {
+    return cached
+  }
+
   try {
     const response = await fetch(`${GITHUB_API_BASE}/repos/${fullName}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json'
       }
     })
+
+    if (response.status === 403) {
+      // Rate limited - return null to use fallback
+      console.warn('GitHub API rate limited')
+      return null
+    }
+
     if (!response.ok) return null
-    return await response.json()
+
+    const data = await response.json()
+    // Cache the result
+    setCache(fullName, data)
+    // Also cache by new name if it was redirected
+    if (data.full_name !== fullName) {
+      setCache(data.full_name, data)
+    }
+    return data
   } catch {
     return null
   }
