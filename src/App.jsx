@@ -11,9 +11,7 @@ import { getWishlist, addToWishlist, removeFromWishlist } from './utils/wishlist
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [language, setLanguage] = useState('')
   const [timePeriod, setTimePeriod] = useState('weekly')
-  // Initialize wishlist directly from localStorage
   const [wishlist, setWishlist] = useState(() => getWishlist())
   const [showWishlist, setShowWishlist] = useState(false)
 
@@ -21,18 +19,13 @@ function App() {
 
   const handleSearch = useCallback((query) => {
     setSearchQuery(query)
-    search(query, language, timePeriod)
-  }, [language, timePeriod, search])
-
-  const handleLanguageChange = useCallback((lang) => {
-    setLanguage(lang)
-    search(searchQuery, lang, timePeriod)
-  }, [searchQuery, timePeriod, search])
+    search(query, '', timePeriod)
+  }, [timePeriod, search])
 
   const handleTimePeriodChange = useCallback((period) => {
     setTimePeriod(period)
-    search(searchQuery, language, period)
-  }, [searchQuery, language, search])
+    search(searchQuery, '', period)
+  }, [searchQuery, search])
 
   const handleToggleWishlist = useCallback((repo) => {
     const isInList = wishlist.some(r => r.full_name === repo.full_name)
@@ -59,8 +52,6 @@ function App() {
           <Filters
             timePeriod={timePeriod}
             onTimePeriodChange={handleTimePeriodChange}
-            language={language}
-            onLanguageChange={handleLanguageChange}
           />
 
           {loading && <LoadingSpinner />}
